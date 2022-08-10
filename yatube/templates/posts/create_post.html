@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}
+  {% if is_edit %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+{% endif %}
+{% endblock title %}
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+      <div class="card">
+        <div class="card-header">       
+            {% if is_edit %}
+              Редактировать запись
+            {% else %}
+              Добавить запись
+            {% endif %}               
+          </button>              
+        </div>
+        <div class="card-body">  
+          {% if form.errors %}
+            {% for field in form %}
+              {% for error in field.errors %}            
+                <div class="alert alert-danger">
+                  {{ error|escape }}
+                </div>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ error|escape }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <form method="post" enctype="multipart/form-data" action="">
+            {% csrf_token %}            
+            <div class="form-group row my-3 p-3">
+              <label for="id_text">
+                Текст поста                  
+                <span class="required text-danger" >*</span>                  
+              </label>
+              {{ form.text }}                 
+              <small id="id_text-help" class="form-text text-muted">
+                Текст нового поста
+              </small>                  
+            </div>            
+            <div class="form-group row my-3 p-3">
+              <label for="id_group">
+                Группа                  
+              </label>
+              {{ form.group }}
+                <small id="id_group-help" class="form-text text-muted">
+                  Группа, к которой будет относиться пост
+                </small>
+            </div>
+            {% if is_edit %}
+            <div class="form-group row my-3 p-3">
+              <label for="id_image">
+              Изображение                 
+              </label>
+              {{ form.image }}
+                <small id="id_group-help" class="form-text text-muted">
+                </small>
+            </div>
+            {% else %}
+            <div class="form-group row my-3 p-3">
+              <label for="id_image">
+                Добавьте изображение                      
+              </label>
+              <input type="file" name="image" accept="image/*" class="form-control" id="id_image">                      
+            </div>
+            {% endif %}
+              <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary">
+                {% if is_edit %}
+                  Сохранить
+                {% else %}
+                  Добавить
+                {% endif %}               
+              </button> 
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
