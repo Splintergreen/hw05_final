@@ -89,7 +89,6 @@ class ViewTest(TestCase):
             ),
             'post_create': ('posts/create_post.html',
                             reverse('posts:post_create')),
-            'follow': ('posts/follow.html', reverse('posts:follow_index')),
         }
 
     def test_pages_uses_correct_template(self):
