@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from itertools import islice
 
 from django import forms
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Follow, Group, Post
+from ..models import Group, Post
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -45,17 +44,12 @@ class ViewTest(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-        batch_size = 13
         objs = (Post(author=cls.user,
                 text='Test %s' % i,
                 image=test_image,
                 group=cls.group)
                 for i in range(14))
-        while True:
-            batch = list(islice(objs, batch_size))
-            if not batch:
-                break
-            Post.objects.bulk_create(batch, batch_size)
+        Post.objects.bulk_create(objs)
 
     @classmethod
     def tearDownClass(cls):
@@ -65,8 +59,6 @@ class ViewTest(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.follow_client = Client()
-        # self.follow_client.force_login(self.user_follow)
         self.page_count = 10
         self.post_id = 1
         self.form_fields = {
@@ -97,6 +89,7 @@ class ViewTest(TestCase):
             ),
             'post_create': ('posts/create_post.html',
                             reverse('posts:post_create')),
+            'follow': ('posts/follow.html', reverse('posts:follow_index')),
         }
 
     def test_pages_uses_correct_template(self):
@@ -113,7 +106,6 @@ class ViewTest(TestCase):
         response = self.authorized_client.get(reverse('posts:index'))
         post_context = response.context['page_obj'].object_list
         post_list = list(Post.objects.all()[:self.page_count])
-        # Проверка передачи изображения в контексте
         self.assertEqual(post_list[5].image, post_context[5].image)
         self.assertEqual(post_list, post_context)
         self.assertEqual(len(response.context['page_obj']), self.page_count)
@@ -136,7 +128,6 @@ class ViewTest(TestCase):
         group_context = response.context['group']
         post_by_group_two_context = group_context.posts.all()
         self.assertEqual(len(post_by_group_two_context), 0)
-        # Проверка передачи изображения в контексте
         self.assertEqual(post_by_group_context[3].image,
                          post_by_group[3].image)
 
@@ -151,7 +142,6 @@ class ViewTest(TestCase):
         self.assertEqual(post_by_author, post_by_author_context)
         self.assertEqual(len(response.context['page_obj']), self.page_count)
         self.assertEqual(post_by_author[3], post_by_author_context[3])
-        # Проверка передачи изображения в контексте
         self.assertEqual(post_by_author_context[3].image,
                          post_by_author[3].image)
 
@@ -162,7 +152,6 @@ class ViewTest(TestCase):
         )
         context_post_id = response.context['post']
         self.assertEqual(self.post_id, context_post_id.id)
-        # Проверка передачи изображения в контексте
         self.assertEqual(context_post_id.image,
                          Post.objects.get(pk=self.post_id).image)
 
@@ -186,7 +175,7 @@ class ViewTest(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
-    def test_cash_index_page_view(self):
+    def test_cache_index_page_view(self):
         '''Тестирование кэша index_page'''
         response = self.authorized_client.get(reverse('posts:index'))
         Post.objects.filter(id=self.post_id).delete()
@@ -197,34 +186,3 @@ class ViewTest(TestCase):
             reverse('posts:index')
         )
         self.assertNotEqual(response.content, response_clear_cache.content)
-
-    def test_authorized_user_can_subscribe(self):
-        '''Авторизованный пользователь может подписываться на других
-        пользователей и удалять их из подписок.'''
-        before_subscribing = Follow.objects.exists()
-        self.authorized_client.get(reverse(
-            'posts:profile_follow',
-            kwargs={'username': self.user_follow})
-        )
-        after_subscribing = Follow.objects.exists()
-        self.assertNotEqual(before_subscribing, after_subscribing)
-        self.authorized_client.get(reverse(
-            'posts:profile_unfollow',
-            kwargs={'username': self.user_follow})
-        )
-        unsubscribe = Follow.objects.exists()
-        self.assertEqual(before_subscribing, unsubscribe)
-
-    def test_authorized_user_view_subscribe(self):
-        '''Новая запись пользователя появляется в ленте тех,
-        кто на него подписан и не появляется в ленте тех, кто не подписан.'''
-        self.follow_client.force_login(self.user_follow)
-        self.follow_client.get(reverse(
-            'posts:profile_follow',
-            kwargs={'username': self.user})
-        )
-        response = self.follow_client.get(reverse('posts:follow_index'))
-        subscribe_user_posts = list(response.context['page_obj'])
-        response = self.authorized_client.get(reverse('posts:follow_index'))
-        unsubscribe_user_posts = list(response.context['page_obj'])
-        self.assertNotEqual(subscribe_user_posts, unsubscribe_user_posts)

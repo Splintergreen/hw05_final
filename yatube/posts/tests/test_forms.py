@@ -66,7 +66,6 @@ class PostCreateFormTests(TestCase):
             reverse('posts:post_create'), data=form_data, follow=True
         )
         self.assertEqual(Post.objects.count(), post_count + 1)
-        # при отправке поста с картинкой через форму есть запись в базе данных.
         self.assertTrue(Post.objects.filter(
             text=form_data['text'],
             image=f'posts/{test_image}').exists()
@@ -130,5 +129,4 @@ class PostCreateFormTests(TestCase):
         )
         self.assertTrue(Comment.objects.filter(**form_data).exists())
         context_comments = response.context.get('comments')
-        # после успешной отправки комментарий появляется на странице поста.
         self.assertTrue(context_comments.exists())

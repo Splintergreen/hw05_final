@@ -12,6 +12,11 @@ class Group(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ['title']
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
+
 
 class Post(models.Model):
     text = models.TextField()
@@ -53,6 +58,11 @@ class Comment(models.Model):
     text = text = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created', 'author', 'post']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
 
 class Follow(models.Model):
     user = models.ForeignKey(User,
@@ -65,5 +75,6 @@ class Follow(models.Model):
                                )
 
     class Meta:
-        verbose_name = 'Подписка'
+        ordering = ['user']
+        verbose_name = 'Подписку'
         verbose_name_plural = 'Подписки'

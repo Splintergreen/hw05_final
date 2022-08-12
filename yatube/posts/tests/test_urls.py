@@ -31,7 +31,6 @@ class URLTest(TestCase):
 
     def test_urls_authorized_user(self):
         '''Проверка соответствия URL для авторизованного пользователя.'''
-        self.authorized_client.force_login(self.user)
         templates_url_names = {
             '/': 'posts/index.html',
             f'/group/{self.group.slug}/': 'posts/group_list.html',
@@ -75,8 +74,4 @@ class URLTest(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         response = self.authorized_client.get('unexiting_page')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-
-    def test_404_castom_template(self):
-        '''Cтраница 404 отдаёт кастомный шаблон'''
-        response = self.guest_client.get('unexiting_page')
         self.assertTemplateUsed(response, 'core/404.html')
