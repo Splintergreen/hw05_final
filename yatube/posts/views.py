@@ -63,7 +63,7 @@ def post_create(request):
     if form.is_valid():
         new_post = form.save(commit=False)
         new_post.author = request.user
-        form.save()
+        new_post.save()
         return redirect('posts:profile', new_post.author)
     context = {'form': form, }
     return render(request, template, context)
@@ -88,7 +88,7 @@ def post_edit(request, post_id):
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
                     instance=post)
-    if post.author.username != request.user.username:
+    if post.author != request.user:
         return redirect('posts:index')
     if form.is_valid():
         form.save()
@@ -117,5 +117,5 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author__username=author).delete()
+    Follow.objects.get(user=request.user, author=author).delete()
     return redirect('posts:follow_index')
