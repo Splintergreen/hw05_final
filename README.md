@@ -1,3 +1,53 @@
 # hw05_final
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+## Описание:  
+Социальная сеть YaTube. 
+Пользователи могут создать учетную запись, публиковать записи, оставлять комментарии и подписываться на любимых авторов и отмечать понравившиеся записи.
+
+Стек технологий использованный в проекте:
+* Python 3.7
+* Django 2.2
+* HTML
+* CSS
+* pytest-django
+* jwt token
+* Pillow
+* sorl-thumbnail
+
+### Покрытие тестами
+Покрытие тестами выполнено при помощи Unit test.
+Тесты находятся в папке `./yatube/posts/test/`. Модуль теста начинается со слова `test_`. Тесты покрывают следующие области:
+
+- тесты кэширования страниц 
+- тесты комментариев
+- тесты подписок на авторов
+- тесты форм
+- тесты загрузки изображений
+- тесты моделей базы данных
+- тесты URL проекта
+- тесты view функций
+
+Каждому тесту соответствует отдельный файл.
+
+## Запуск проекта:
+
+Клонируйте репозиторий и перейти в него в командной строке: 
+
+    git clone git@github.com:Splintergreen/hw05_final.git
+
+Установите и активируйте виртуальное окружение: 
+
+    python3 -m venv venv 
+    source venv/bin/activate
+
+Установите зависимости из файла requirements.txt:   
+    
+    pip install -r requirements.txt
+
+Выполните миграции: 
+
+    python manage.py migrate
+
+В папке с файлом manage.py выполните команду:  
+
+    python manage.py runserver
